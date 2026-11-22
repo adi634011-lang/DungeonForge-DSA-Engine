@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DungeonForge - Procedural Dungeon & DSA Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">⚔️</span>
+        <div>
+          <h1>DUNGEON<span class="highlight">FORGE</span></h1>
+          <p class="subtitle">Procedural Generation & DSA Engine</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge bsp">BSP Trees</span>
+        <span class="badge dsu">Union-Find</span>
+        <span class="badge mst">Kruskal's MST</span>
+        <span class="badge astar">A* Search</span>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="main-layout">
+      <!-- Left Panel: Canvas Display -->
+      <div class="canvas-section">
+        <div class="canvas-toolbar">
+          <div class="status-indicator">
+            <span class="dot active"></span>
+            <span id="pipeline-status">Ready</span>
+          </div>
+          <div class="mode-toggles">
+            <button id="btn-mode-viz" class="mode-btn active">📊 Algorithm Visualizer</button>
+            <button id="btn-mode-play" class="mode-btn">🎮 Playable Game</button>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="dungeonCanvas" width="900" height="540"></canvas>
+          <div id="game-overlay" class="game-overlay hidden">
+            <div class="overlay-card">
+              <h2 id="overlay-title">Floor Cleared!</h2>
+              <p id="overlay-msg">You reached the exit and collected treasures!</p>
+              <button id="btn-next-floor" class="primary-btn">Descend to Next Floor 🔻</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="control-bar">
+          <button id="btn-auto-gen" class="action-btn primary">
+            <span>✨</span> Instant Generate
+          </button>
+          <div class="step-buttons">
+            <button id="btn-step-bsp" class="action-btn" title="Binary Space Partitioning">1. BSP Split</button>
+            <button id="btn-step-rooms" class="action-btn" title="Carve Rooms in Leaf Nodes">2. Rooms</button>
+            <button id="btn-step-mst" class="action-btn" title="Kruskal's MST with Union-Find">3. Kruskal MST</button>
+            <button id="btn-step-corridors" class="action-btn" title="Carve Grid Corridors">4. Corridors</button>
+            <button id="btn-step-entities" class="action-btn" title="Spawn Entities">5. Entities</button>
+            <button id="btn-step-astar" class="action-btn highlight-btn" title="A* Optimal Route">6. A* Path</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: DSA Diagnostics & Stats -->
+      <aside class="sidebar">
+        <!-- Live DSA Stats Card -->
+        <div class="panel-card">
+          <h3 class="card-title">📈 Graph & Tree Telemetry</h3>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-val" id="stat-rooms">0</span>
+              <span class="stat-lbl">Rooms (Nodes)</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val" id="stat-edges">0</span>
+              <span class="stat-lbl">MST Edges</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val" id="stat-loops">0</span>
+              <span class="stat-lbl">Extra Loops</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val" id="stat-depth">4</span>
+              <span class="stat-lbl">BSP Depth</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val" id="stat-path-len">0</span>
+              <span class="stat-lbl">A* Path Length</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val text-success" id="stat-solvable">YES</span>
+              <span class="stat-lbl">Solvability</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Algorithm Breakdown Card -->
+        <div class="panel-card">
+          <h3 class="card-title">🧠 Algorithms In Action</h3>
+          <div class="algo-list">
+            <div class="algo-item">
+              <div class="algo-header">
+                <span class="algo-name">1. Binary Space Partitioning</span>
+                <span class="algo-complexity">O(N log N)</span>
+              </div>
+              <p class="algo-desc">Recursively bisects 2D space horizontally/vertically into a binary tree of regions.</p>
+            </div>
+            <div class="algo-item">
+              <div class="algo-header">
+                <span class="algo-name">2. Kruskal's MST + DSU</span>
+                <span class="algo-complexity">O(E log E)</span>
+              </div>
+              <p class="algo-desc">Disjoint Set Union (path compression + rank) connects all rooms with zero isolated nodes.</p>
+            </div>
+            <div class="algo-item">
+              <div class="algo-header">
+                <span class="algo-name">3. A* Search (Min-Heap)</span>
+                <span class="algo-complexity">O(V log V)</span>
+              </div>
+              <p class="algo-desc">Heuristic pathfinder f(n) = g(n) + h(n) solving shortest route and guiding monster AI.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Info / Help -->
+        <div class="panel-card" id="game-controls-card">
+          <h3 class="card-title">🎮 Game Controls</h3>
+          <p class="hint-text">Use <strong>Arrow Keys</strong> or <strong>W, A, S, D</strong> to navigate player (<span class="player-char">@</span>).</p>
+          <div class="legend-row">
+            <span><span class="legend-swatch player"></span> Player (@)</span>
+            <span><span class="legend-swatch exit"></span> Exit (>)</span>
+          </div>
+          <div class="legend-row">
+            <span><span class="legend-swatch monster"></span> Monster (M)</span>
+            <span><span class="legend-swatch treasure"></span> Treasure ($)</span>
+          </div>
+          <div class="game-score-row">
+            <span>Gold: <strong id="game-gold">0</strong> 🪙</span>
+            <span>Floor: <strong id="game-floor">1</strong> 🏰</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="dsa.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
